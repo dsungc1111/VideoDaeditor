@@ -50,6 +50,8 @@ public struct CustomVideoTrimmerView: View {
         return (CGFloat(maxSeconds) / CGFloat(endTime)) * timelineWidth
     }
     
+    public var onTrimCompletion: ((URL) -> Void)? = nil
+    
     // MARK: - Init
     public init() { }
     
@@ -352,6 +354,7 @@ extension CustomVideoTrimmerView {
             DispatchQueue.main.async {
                 self.trimmedVideoURL = trimmedURL
                 self.setupPlayer(with: trimmedURL)
+                self.onTrimCompletion?(trimmedURL)
             }
         }
     }
