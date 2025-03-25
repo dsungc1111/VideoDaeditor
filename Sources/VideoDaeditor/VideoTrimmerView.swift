@@ -147,7 +147,7 @@ public struct CustomVideoTrimmerView: View {
                 // 외부에서 액션이 들어오면 새로운 뷰를 거치지 않고 바로 사진첩을
                 Image(systemName: "video.circle")
                     .resizable()
-                    .frame(width: 30, height: 30)
+                    .frame(width: 50, height: 50)
                     .foregroundStyle(.red)
                     .border(.white, width: 3)
             }
