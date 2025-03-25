@@ -11,6 +11,7 @@ import AVFoundation
 import UniformTypeIdentifiers
 
 @MainActor
+@available(iOS 16.0, *)
 public struct CustomVideoTrimmerView: View {
     // MARK: - Public State/Properties
     @State public var selectedItem: PhotosPickerItem? = nil  // PhotosPicker로 선택된 비디오
@@ -144,10 +145,10 @@ public struct CustomVideoTrimmerView: View {
         }
         .sheet(isPresented: $isPickerPresented) {
             PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
-                // 외부에서 액션이 들어오면 새로운 뷰를 거치지 않고 바로 사진첩을
-                Image(systemName: "video.circle")
+                // 라벨은 내부에서 사용하지 않으므로 비워두거나 간단한 텍스트로 대체
+                Image(systemName: "camera.circle")
                     .resizable()
-                    .frame(width: 50, height: 50)
+                    .frame(width: 40, height: 40)
                     .foregroundStyle(.red)
             }
         }
@@ -157,7 +158,7 @@ public struct CustomVideoTrimmerView: View {
 // 나머지 기능 (loadSelectedVideo, setupPlayer, generateThumbnails 등) 및 VideoPlayerView는 기존 코드와 동일합니다.
 
 // MARK: - Public/Private Extension (CustomVideoTrimmerView)
-
+@available(iOS 16.0, *)
 extension CustomVideoTrimmerView {
     
     /// PhotosPickerItem으로부터 비디오 Data를 로드 → 임시 폴더에 저장 후 썸네일/플레이어 준비
@@ -218,7 +219,7 @@ extension CustomVideoTrimmerView {
         generator.maximumSize = CGSize(width: 100, height: 100)
         
         do {
-            let duration = try await asset.load(.duration)
+            let duration = try await asset.load(.duration)  // iOS 16+ API
             let durationInSeconds = CMTimeGetSeconds(duration)
             let frameCount = 5
             let times: [CMTime] = (0..<frameCount).map { i in
@@ -580,4 +581,3 @@ extension CustomVideoTrimmerView {
         currentPlayPosition = 0
     }
 }
-
