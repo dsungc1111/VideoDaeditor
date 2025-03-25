@@ -10,11 +10,8 @@ import Combine
 import AVFoundation
 import UniformTypeIdentifiers
 
-// MARK: - CustomVideoTrimmerView
-/// 비디오 선택 → 재생 + 썸네일 타임라인 + 트리밍 핸들 + 트리밍된 영상 재생
-/// 외부 모듈에서도 직접 View로 사용할 수 있도록 `public` 선언
 @MainActor
-@available(iOS 16.0, *)  // .load(.duration) 사용 위해 iOS 16+ 가정
+@available(iOS 16.0, *)
 public struct CustomVideoTrimmerView: View {
     // MARK: - Public State/Properties
     @State public var selectedItem: PhotosPickerItem? = nil  // PhotosPicker로 선택된 비디오
@@ -50,30 +47,47 @@ public struct CustomVideoTrimmerView: View {
         return (CGFloat(maxSeconds) / CGFloat(endTime)) * timelineWidth
     }
     
+    // 외부에서 제어할 수 있는 사진첩 표시 바인딩
+    @Binding public var isPickerPresented: Bool
+    
+    // 기본 제공 버튼 사용 여부 (기본값: true)
+    public var showDefaultPickerButton: Bool = true
+    
     public var onTrimCompletion: ((URL) -> Void)? = nil
     
     // MARK: - Init
-    public init() { }
+    /// 외부에서 isPickerPresented 바인딩을 전달하고, 기본 버튼 사용 여부를 선택할 수 있습니다.
+    public init(isPickerPresented: Binding<Bool> = .constant(false),
+                showDefaultPickerButton: Bool = true) {
+        self._isPickerPresented = isPickerPresented
+        self.showDefaultPickerButton = showDefaultPickerButton
+    }
     
     // MARK: - Body
     public var body: some View {
         VStack {
-            // 1) 비디오 선택 버튼
-            PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
-                Text("📂 사진 또는 비디오 선택")
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+            // 기본 버튼을 표시할지 여부에 따라 선택 기능 노출
+            if showDefaultPickerButton {
+                Button(action: {
+                    isPickerPresented = true
+                }) {
+                    Text("📂 사진 또는 비디오 선택")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.top, 16)
             }
-            .padding(.top, 16)
+            
+            // 외부에서도 isPickerPresented가 true로 변경되면 PhotosPicker가 모달로 표시됩니다.
             
             if isLoading {
                 ProgressView("비디오 로드 중...")
                     .padding()
             }
             
-            // 2) 비디오 플레이어
+            // 비디오 플레이어 및 기타 UI
             if let _ = originalVideoURL {
                 if let player = player {
                     VideoPlayerView(player: player, isPlaying: $isPlaying)
@@ -86,19 +100,16 @@ public struct CustomVideoTrimmerView: View {
                         .padding(.horizontal, 15)
                 }
                 
-                // 썸네일 타임라인 + 트리밍 핸들
                 if !thumbnails.isEmpty {
                     timelineWithHandles()
                         .padding(.top, 20)
                         .frame(width: timelineWidth + 120, height: 60)
                 }
                 
-                // 트리밍 구간 표시
                 Text("트리밍: \(settings.startTime, specifier: "%.2f")초 ~ \(settings.selectedEndTime, specifier: "%.2f")초")
                     .font(.caption)
                     .padding(.top, 5)
                 
-                // 3) "트리밍 완료" 버튼
                 Button("✂️ 트리밍 완료") {
                     Task {
                         await exportTrimmedVideo()
@@ -107,7 +118,6 @@ public struct CustomVideoTrimmerView: View {
                 .buttonStyle(.borderedProminent)
                 .padding(.top, 10)
                 
-                // 4) 트리밍된 영상이 있으면 안내
                 if let trimmedVideoURL {
                     Text("트리밍된 영상: \(trimmedVideoURL.lastPathComponent)")
                         .font(.footnote)
@@ -115,7 +125,6 @@ public struct CustomVideoTrimmerView: View {
                         .padding(.top, 5)
                 }
             } else {
-                // 비디오 선택 전
                 Text("선택된 비디오가 없습니다.")
                     .foregroundColor(.secondary)
                     .padding()
@@ -134,8 +143,16 @@ public struct CustomVideoTrimmerView: View {
                 await loadSelectedVideo(newItem)
             }
         }
+        .sheet(isPresented: $isPickerPresented) {
+            PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
+                // 라벨은 내부에서 사용하지 않으므로 비워두거나 간단한 텍스트로 대체
+                Text("사진 또는 비디오 선택")
+            }
+        }
     }
 }
+
+// 나머지 기능 (loadSelectedVideo, setupPlayer, generateThumbnails 등) 및 VideoPlayerView는 기존 코드와 동일합니다.
 
 // MARK: - Public/Private Extension (CustomVideoTrimmerView)
 @available(iOS 16.0, *)
