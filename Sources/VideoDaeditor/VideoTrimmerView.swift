@@ -149,7 +149,6 @@ public struct CustomVideoTrimmerView: View {
                     .resizable()
                     .frame(width: 50, height: 50)
                     .foregroundStyle(.red)
-                    .border(.white, width: 3)
             }
         }
     }
