@@ -69,6 +69,7 @@ public struct CustomVideoTrimmerView: View {
             }
             
             // 2) 비디오 플레이어
+    
             if let _ = originalVideoURL {
                 if let player = player {
                     VideoPlayerView(player: player, isPlaying: $isPlaying)
@@ -81,26 +82,30 @@ public struct CustomVideoTrimmerView: View {
                         .padding(.horizontal, 15)
                 }
                 
-                // 썸네일 타임라인 + 트리밍 핸들
-                if !thumbnails.isEmpty {
+                // 2) 타임라인은 trimmedVideoURL이 없을 때(즉, 아직 트리밍 안 했을 때)만 표시
+                if !thumbnails.isEmpty, trimmedVideoURL == nil {
                     timelineWithHandles()
                         .padding(.top, 20)
                         .frame(width: timelineWidth + 120, height: 60)
                 }
                 
                 // 트리밍 구간 표시
-                Text("트리밍: \(settings.startTime, specifier: "%.2f")초 ~ \(settings.selectedEndTime, specifier: "%.2f")초")
-                    .font(.caption)
-                    .padding(.top, 5)
-                
-                // 3) "트리밍 완료" 버튼
-                Button("✂️ 트리밍 완료") {
-                    Task {
-                        await exportTrimmedVideo()
-                    }
+                if trimmedVideoURL == nil {
+                    Text("트리밍: \(settings.startTime, specifier: "%.2f")초 ~ \(settings.selectedEndTime, specifier: "%.2f")초")
+                        .font(.caption)
+                        .padding(.top, 5)
                 }
-                .buttonStyle(.borderedProminent)
-                .padding(.top, 10)
+                
+                // 3) "트리밍 완료" 버튼도 트리밍 전( trimmedVideoURL == nil )에만 보이게
+                if trimmedVideoURL == nil {
+                    Button("✂️ 트리밍 완료") {
+                        Task {
+                            await exportTrimmedVideo()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top, 10)
+                }
                 
                 // 4) 트리밍된 영상이 있으면 안내
                 if let trimmedVideoURL {
@@ -109,6 +114,7 @@ public struct CustomVideoTrimmerView: View {
                         .foregroundColor(.gray)
                         .padding(.top, 5)
                 }
+                
             } else {
                 // 비디오 선택 전
                 Text("선택된 비디오가 없습니다.")
