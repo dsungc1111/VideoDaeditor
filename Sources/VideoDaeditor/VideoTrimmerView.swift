@@ -59,11 +59,7 @@ public struct CustomVideoTrimmerView: View {
         VStack {
             // 1) 비디오 선택 버튼
             PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
-                Text("📂 사진 또는 비디오 선택")
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                Image(systemName: "camera.circle")
             }
             .padding(.top, 16)
             
@@ -158,7 +154,7 @@ extension CustomVideoTrimmerView {
             
             // 플레이어 준비
             DispatchQueue.main.async {
-                setupPlayer(with: tempURL)
+                self.setupPlayer(with: tempURL)
             }
         }
         isLoading = false
@@ -207,10 +203,9 @@ extension CustomVideoTrimmerView {
             
             var tempThumbnails: [UIImage] = []
             for time in times {
-                // iOS 17 이상이면 image(at:), 이하면 copyCGImage(at:actualTime:)
                 if #available(iOS 17.0, *) {
-                    let (cgImage, actualTime) = try await generator.image(at: time)
-                     tempThumbnails.append(UIImage(cgImage: cgImage))
+                    let (cgImage, _) = try await generator.image(at: time)
+                    tempThumbnails.append(UIImage(cgImage: cgImage))
                 } else {
                     if let cgImage = try? generator.copyCGImage(at: time, actualTime: nil) {
                         tempThumbnails.append(UIImage(cgImage: cgImage))
@@ -241,16 +236,14 @@ extension CustomVideoTrimmerView {
         }
     }
     
-    /// AVPlayer 설정
+    /// AVPlayer를 완전히 초기화한 후, 새 URL로 인스턴스를 생성
     public func setupPlayer(with url: URL) {
         resetPlayer()
         player = AVPlayer(url: url)
         let interval = CMTime(seconds: 0.2, preferredTimescale: 600)
         
-        timeObserverToken = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) {  time in
-//            guard let self = self else { return }
+        timeObserverToken = player?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
             
-            // MainActor 블록
             Task { @MainActor in
                 let currentSeconds = CMTimeGetSeconds(time)
                 self.currentTime = currentSeconds
@@ -268,20 +261,17 @@ extension CustomVideoTrimmerView {
             }
         }
         
-        // 영상 끝까지 재생 시 다시 트리밍 시작점으로
+        // 영상 끝까지 재생 시, 다시 트리밍 시작점으로
         NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
             object: player?.currentItem,
             queue: .main
-        ) {  _ in
-//            guard let self = self else { return }
-            // 메인 액터 블록으로 감싸서, isPlaying / player에 안전하게 접근
+        ) { _ in
             Task { @MainActor in
                 self.isPlaying = false
                 self.player?.seek(to: CMTime(seconds: self.settings.startTime, preferredTimescale: 600))
             }
         }
-        
     }
     
     /// 플레이어 리셋
@@ -348,7 +338,7 @@ extension CustomVideoTrimmerView {
         
         // 1) AVAssetExportSession을 이용하여 트리밍
         if let trimmedURL = await trimVideo(inputURL: originalURL, startTime: start, endTime: end) {
-            // 2) 기존 플레이어 해제 후, 새 파일 URL로 재생
+            // 2) 기존 플레이어를 완전히 초기화하고, 새 URL로 새 AVPlayer 인스턴스 생성
             DispatchQueue.main.async {
                 self.trimmedVideoURL = trimmedURL
                 self.setupPlayer(with: trimmedURL)
