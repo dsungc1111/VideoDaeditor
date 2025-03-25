@@ -145,8 +145,8 @@ public struct CustomVideoTrimmerView: View {
         }
         .sheet(isPresented: $isPickerPresented) {
             PhotosPicker(selection: $selectedItem, matching: .videos, photoLibrary: .shared()) {
-                // 라벨은 내부에서 사용하지 않으므로 비워두거나 간단한 텍스트로 대체
-                Text("사진 또는 비디오 선택")
+                // 외부에서 액션이 들어오면 새로운 뷰를 거치지 않고 바로 사진첩으로
+                EmptyView()
             }
         }
     }
