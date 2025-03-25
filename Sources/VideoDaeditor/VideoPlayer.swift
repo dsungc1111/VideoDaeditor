@@ -10,7 +10,6 @@ import AVKit
 
 // MARK: - PlayerSettings
 /// 비디오 트리밍 구간(startTime, selectedEndTime) 등의 정보를 담고 있는 ObservableObject
-@available(iOS 16.0, *)
 public class PlayerSettings: ObservableObject {
     @Published public var startTime: Double = 0        // 트리밍 시작 시점(초)
     @Published public var selectedEndTime: Double = 5  // 트리밍 종료 시점(초)
@@ -20,7 +19,6 @@ public class PlayerSettings: ObservableObject {
 
 // MARK: - VideoPlayerView
 /// AVKit의 AVPlayerViewController를 SwiftUI에서 사용하기 위한 UIViewControllerRepresentable
-@available(iOS 16.0, *)
 public struct VideoPlayerView: UIViewControllerRepresentable {
     public var player: AVPlayer
     @Binding public var isPlaying: Bool
@@ -46,13 +44,3 @@ public struct VideoPlayerView: UIViewControllerRepresentable {
         }
     }
 }
-
-// MARK: - Preview
-#if DEBUG
-@available(iOS 16.0, *)
-struct CustomVideoTrimmerView_Previews: PreviewProvider {
-    static var previews: some View {
-        CustomVideoTrimmerView()
-    }
-}
-#endif

@@ -14,7 +14,6 @@ import UniformTypeIdentifiers
 /// 비디오 선택 → 재생 + 썸네일 타임라인 + 트리밍 핸들 + 트리밍된 영상 재생
 /// 외부 모듈에서도 직접 View로 사용할 수 있도록 `public` 선언
 @MainActor
-@available(iOS 16.0, *)  // .load(.duration) 사용 위해 iOS 16+ 가정
 public struct CustomVideoTrimmerView: View {
     // MARK: - Public State/Properties
     @State public var selectedItem: PhotosPickerItem? = nil  // PhotosPicker로 선택된 비디오
@@ -138,7 +137,6 @@ public struct CustomVideoTrimmerView: View {
 }
 
 // MARK: - Public/Private Extension (CustomVideoTrimmerView)
-@available(iOS 16.0, *)
 extension CustomVideoTrimmerView {
     
     /// PhotosPickerItem으로부터 비디오 Data를 로드 → 임시 폴더에 저장 후 썸네일/플레이어 준비
