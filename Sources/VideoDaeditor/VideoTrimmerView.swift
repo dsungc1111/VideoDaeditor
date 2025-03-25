@@ -73,7 +73,7 @@ public struct CustomVideoTrimmerView: View {
             if let _ = originalVideoURL {
                 
                 
-                ZStack {
+                VStack(spacing: 8) {
                     if let player = player {
                         VideoPlayerView(player: player, isPlaying: $isPlaying)
                             .frame(height: 300)
@@ -85,7 +85,6 @@ public struct CustomVideoTrimmerView: View {
                             .padding(.horizontal, 15)
                     }
                     
-                    // 플레이 버튼은 항상 보이게 함 (투명도나 위치는 원하는 대로 조절)
                     Button(action: { togglePlayPause() }) {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                             .resizable()
