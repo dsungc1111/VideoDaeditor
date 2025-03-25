@@ -71,15 +71,28 @@ public struct CustomVideoTrimmerView: View {
             // 2) 비디오 플레이어
     
             if let _ = originalVideoURL {
-                if let player = player {
-                    VideoPlayerView(player: player, isPlaying: $isPlaying)
-                        .frame(height: 300)
-                        .cornerRadius(12)
-                        .padding(.horizontal, 15)
-                } else {
-                    ProgressView("플레이어 초기화 중...")
-                        .frame(height: 300)
-                        .padding(.horizontal, 15)
+                
+                
+                ZStack {
+                    if let player = player {
+                        VideoPlayerView(player: player, isPlaying: $isPlaying)
+                            .frame(height: 300)
+                            .cornerRadius(12)
+                            .padding(.horizontal, 15)
+                    } else {
+                        ProgressView("플레이어 초기화 중...")
+                            .frame(height: 300)
+                            .padding(.horizontal, 15)
+                    }
+                    
+                    // 플레이 버튼은 항상 보이게 함 (투명도나 위치는 원하는 대로 조절)
+                    Button(action: { togglePlayPause() }) {
+                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                            .resizable()
+                            .frame(width: 60, height: 60)
+                            .foregroundColor(.white)
+                            .shadow(radius: 4)
+                    }
                 }
                 
                 // 2) 타임라인은 trimmedVideoURL이 없을 때(즉, 아직 트리밍 안 했을 때)만 표시
