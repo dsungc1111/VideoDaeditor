@@ -85,12 +85,15 @@ public struct CustomVideoTrimmerView: View {
                             .padding(.horizontal, 15)
                     }
                     
-                    Button(action: { togglePlayPause() }) {
-                        Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .resizable()
-                            .frame(width: 60, height: 60)
-                            .foregroundColor(.white)
-                            .shadow(radius: 4)
+                    if let _ = trimmedVideoURL {
+                        
+                        Button(action: { togglePlayPause() }) {
+                            Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                .resizable()
+                                .frame(width: 60, height: 60)
+                                .foregroundColor(.white)
+                                .shadow(radius: 4)
+                        }
                     }
                 }
                 
